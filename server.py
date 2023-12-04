@@ -124,6 +124,11 @@ def generate_nmea2000_data():
 HOST = '127.0.0.1'  # Loopback IP address
 PORT = 65432  # Port to listen on
 
+fuel_decay_lower = 2.7  #Random fuel decay lower limit
+fuel_decay_upper = 3.8  #Random fuel decay upper limit
+initial_fuel = 100 #We will use 100 as an easy to estimate starting capacity
+
+
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
     # Bind the socket to the address and port
@@ -145,14 +150,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
                 x = x.encode('utf-8')
                 conn.sendall(x)  # Send generated NMEA 0183 data to the client
                 time.sleep(.25)
-            time.sleep(.25)  # Simulate sending data at intervals
+            time.sleep(.25) # Simulate sending data at intervals
             conn.sendall(nmea2000_data)  # Send generated NMEA 2000 data to the client
-            time.sleep(.25)  # Simulate sending data at intervals
+            # Simulate sending data at intervals
             
             # Simulate dredge fuel and oil data and send it to the client
-            fuel_level = round(random.uniform(0.0, 100.0), 2)  # Fuel level percentage
-            oil_level = round(random.uniform(0.0, 50.0), 2)  # Oil level in liters
+            initial_fuel = initial_fuel - round(random.uniform(fuel_decay_lower, fuel_decay_upper), 2)  # Fuel level percentage
+            oil_level = round(random.uniform(31.0, 51.0), 2)  # Oil level in liters
             
-            dredge_data = f"Dredge Fuel Level: {fuel_level}%, Oil Level: {oil_level}L".encode('utf-8')
+            dredge_data = f"Fuel Level: {initial_fuel}%, Oil Level: {oil_level}L".encode('utf-8')
             conn.sendall(dredge_data)  # Send dredge data to the client
             time.sleep(1)  # Simulate sending data at intervals
