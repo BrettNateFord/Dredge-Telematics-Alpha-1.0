@@ -8,11 +8,19 @@ import time
 #***************************************************************************************************
 # Initialize plot for fuel and oil levels received from the server
 plt.ion()  # Turn on interactive mode for live updates
-fig, ax = plt.subplots()
-ax.set_xlabel('Time')
-ax.set_ylabel('Level')
-plt.title('Real-time Fuel and Oil Levels Plot')
-plt.show()
+fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+
+# Plot data on each subplot
+
+plt.xlabel('Time')  # Common X-axis label
+ax1.set_title('Fuel Percentage')
+ax2.set_title("Oil Percentage")
+#plt.ion()  # Turn on interactive mode for live updates
+#fig, ax = plt.subplots()
+#ax.set_xlabel('Time')
+#ax.set_ylabel('Level')
+#plt.title('Real-time Fuel and Oil Levels Plot')
+#plt.show()
 
 # Set up TCP connection to the server
 HOST = '127.0.0.1'  # Loopback IP address
@@ -47,8 +55,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                 oil_level = float(re.search(r'\d+\.\d+', decoded_data.split('Oil Level: ')[1]).group())
                 if fuel_level < 55 and not low_fuel_notified:
                     for i in range(5):
-                        plt.text(t_stamp, fuel_level + i * 5, f"LOW FUEL NOTIFICATION! Fuel at: {fuel_level}%",  color='red')
-
+                        plt.text(t_stamp, fuel_level, f"LOW FUEL! Fuel at: {fuel_level}%",  color='red')
+                        print(f"LOW FUEL NOTIFICATION: FUEL BELOW {fuel_level}")
                         low_fuel_notified = True  # Set the flag to True once the notification is displayed:
                         plt.annotate('Low Fuel', xy=(time.time(), fuel_level), xytext=(time.time(), fuel_level + 10),
                             arrowprops=dict(facecolor='red', shrink=0.05))
@@ -58,8 +66,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                 oil_levels.append(oil_level)
                 
                 # Plot fuel and oil levels in real-time
-                ax.plot(fuel_levels, label='Fuel Level')
-                ax.plot(oil_levels, label='Oil Level')
+                ax1.plot(fuel_levels, label='Fuel Level')
+                ax2.plot(oil_levels, label='Oil Level')
                 plt.pause(0.01)  # Small pause to update the plot
             except AttributeError:
                 pass  # Ignore non-numeric data
